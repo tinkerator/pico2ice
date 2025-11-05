@@ -29,10 +29,35 @@ injected into the FPGA. It then lets the FPGA run causing it to flash
 its Blue LED. After this, the cram.go code randomly flashes one color
 at a time of the RP2350B connected Tricolor LED.
 
-## TODO
+## The pio.go file
 
-- Add some notes on how to generate the `pio.go` file in this package,
-  using the [piocli](https://zappem.net/pub/io/pious) tool.
+Part of the `pico2ice` package is generated code. The input for this
+generation is the collection of `.pio` files in the [pio/](pio)
+directory:
+
+- [`pio/clock.pio`](pio/clock.pio) a 6-cycle clock output (pico2: 25 MHz)
+- [`pio/spi.pio`](pio/spi.pio) a simple SPI read and write transfer loop (pico2 6.25 MHz)
+
+To rebuild the `pio.go` file (assuming that you are in the
+pico2ice/examples directory):
+
+```
+$ cd ../../
+$ git clone https://github.com/tinkerator/pious.git
+$ cd pious
+$ go install examples/piocli.go
+```
+
+This downloads the [`pious`](https://zappem.net/pub/io/pious) package
+sources and installs the built tool in `~/go/bin/piocli`. Go back to
+the `pico2ice` sources and run this tool:
+
+```
+$ cd ../pico2ice
+$ ~/go/bin/piocli --src=pio/spi.pio,pio/clock.pio --name pico2ice --tinygo > pio.go
+```
+
+## TODO
 
 - Add some notes on installing tinygo. This should have been easy, but
   it took some extra packages, and you have to use the version that

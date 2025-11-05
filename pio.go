@@ -27,8 +27,8 @@ type StateMachine struct {
 	Cfg    pio.StateMachineConfig
 }
 
-// Start initializes and starts a StateMachine running a configured
-// PIO sequence.
+// Start initializes a StateMachine with a configured
+// PIO sequence. Use s.Activate(true|false) to enable it.
 func (s *StateMachine) Start() {
 	s.SM.Init(s.Origin, s.Cfg)
 }
@@ -61,8 +61,8 @@ func Assign(block *pio.PIO) (*Engine, error) {
 }
 
 // ConfigureSpi sets up a spi module. It operates with
-// an in size of ", m.In, " bits; an out size of ", m.Out, " bits;
-// a side-set size of 1; and a pins set size of 0 bits.
+// an in bit-size of 1; an out bit-size of 1;
+// a side-set bit-size of 1; and a set bit-size of 0.
 func (e *Engine) ConfigureSpi(inBase, outBase, sideSetBase machine.Pin) (*StateMachine, error) {
 	sm, err := e.block.ClaimStateMachine()
 	if err != nil {
@@ -103,8 +103,8 @@ func (e *Engine) ConfigureSpi(inBase, outBase, sideSetBase machine.Pin) (*StateM
 }
 
 // ConfigureClock sets up a clock module. It operates with
-// an in size of ", m.In, " bits; an out size of ", m.Out, " bits;
-// a side-set size of 1; and a pins set size of 0 bits.
+// an in bit-size of 0; an out bit-size of 0;
+// a side-set bit-size of 1; and a set bit-size of 0.
 func (e *Engine) ConfigureClock(sideSetBase machine.Pin) (*StateMachine, error) {
 	sm, err := e.block.ClaimStateMachine()
 	if err != nil {
