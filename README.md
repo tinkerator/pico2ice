@@ -57,18 +57,132 @@ $ cd ../pico2ice
 $ ~/go/bin/piocli --src=pio/spi.pio,pio/clock.pio --name pico2ice --tinygo > pio.go
 ```
 
+## The hello.bin file
+
+The `examples/hello.bin` file is an FPGA bitfile for the ice40 chip on
+the pico2-ice board. It is built from some verilog file present in the
+[v/](v) directory.
+
+### Generating the hello.bin file
+
+To convert `v/hello.v` into a `hello.bin` file we use the yosys
+toolchain. Specifically the tools `yosys`, `nextpnr-ice40` and
+`icepack`.
+
+**NOTE** on Fedora, these tools are to be found in the `yosys`,
+  `icestorm` and `nextpnr` packages. On Debian, these tools are to be
+  found in the `yosys`, `fpga-icestorm` and `nextpnr` packages.
+
+In the `v/` working directory do the following to rebuild the
+`hello.bin` file:
+
+```
+$ yosys -p "synth_ice40 -top top -json hello.json" hello.v
+$ nextpnr-ice40 --up5k  --package sg48 --json hello.json --pcf hello.pcf --asc hello.asc
+$ icepack hello.asc hello.bin
+```
+
+- Note: the `hello.pcf` file is a script to map only the pins the
+  `cram.go` example uses. The full FPGA pinout file is referenced in a
+  comment in the `hello.pcf` file, but conveniently [here
+  too](https://github.com/tinyvision-ai-inc/pico-ice-sdk/blob/main/rtl/pico2_ice.pcf).
+
+If you want to replace the default build of this file with a custom
+one, you can do this:
+
+```
+$ cp hello.bin ../examples
+```
+
+### Simulating the hello.v logic
+
+Typically, to simulate logic, you have some test wrapper for that
+logic. In our case we have the `hello_test.v` file. To perform that
+test, we use the [Icarus
+Verilog](https://steveicarus.github.io/iverilog/) suite. Most
+specifically, the `iverilog` and `vvp` tools. We also use GTKWave (the
+`gtkwave` tool).
+
+**NOTE** on Fedora and Debian, these tools are to be found in the
+  `iverilog` and `gtkwave` packages.
+
+To build the test binary (generate `a.out`) and run it do the
+following:
+
+```
+$ iverilog hello_test.v hello.v
+$ ./a.out
+VCD info: dumpfile dump.vcd opened for output.
+end of test
+```
+
+You can view this `dump.vcd` file with
+[GTKWave](https://steveicarus.github.io/iverilog/usage/gtkwave.html),
+and also with the [`twave`](https://zappem.net/pub/project/twave/)
+tool. To only look at the top level signals we do the following:
+
+```
+$ ~/go/bin/twave --file dump.vcd --syms hello_test.top.clk,hello_test.reset,hello_test.red,hello_test.green,hello_test.blue
+[] : [$version Icarus Verilog $end]
+                hello_test.green-+
+                  hello_test.red-|-+
+                 hello_test.blue-|-|-+
+                hello_test.reset-|-|-|-+
+              hello_test.top.clk-|-|-|-|-+
+                                 | | | | |
+2025-11-08 15:29:26.000000000000 1 1 x x x
+2025-11-08 15:29:26.000000010000 1 1 x 1 0
+2025-11-08 15:29:26.000000020000 1 1 x 1 0
+2025-11-08 15:29:26.000000030000 1 1 x 1 1
+2025-11-08 15:29:26.000000040000 1 1 x 0 1
+2025-11-08 15:29:26.000000050000 1 1 x 0 0
+2025-11-08 15:29:26.000000060000 1 1 x 0 0
+2025-11-08 15:29:26.000000070000 1 1 0 0 1
+2025-11-08 15:29:26.000000080000 1 1 0 0 1
+2025-11-08 15:29:26.000000090000 1 1 0 1 0
+2025-11-08 15:29:26.000000100000 1 1 0 1 0
+2025-11-08 15:29:26.000000110000 1 1 0 1 1
+2025-11-08 15:29:26.000000120000 1 1 0 1 1
+2025-11-08 15:29:26.000000130000 1 1 0 1 0
+2025-11-08 15:29:26.000000140000 1 1 0 1 0
+2025-11-08 15:29:26.000000150000 1 1 0 1 1
+2025-11-08 15:29:26.000000160000 1 1 0 1 1
+2025-11-08 15:29:26.000000170000 1 1 0 1 0
+2025-11-08 15:29:26.000000180000 1 1 0 1 0
+2025-11-08 15:29:26.000000190000 1 1 0 1 1
+2025-11-08 15:29:26.000000200000 1 1 0 1 1
+2025-11-08 15:29:26.000000210000 1 1 0 1 0
+2025-11-08 15:29:26.000000220000 1 1 0 1 0
+2025-11-08 15:29:26.000000230000 1 1 1 1 1
+2025-11-08 15:29:26.000000240000 1 1 1 1 1
+2025-11-08 15:29:26.000000250000 1 1 1 1 0
+2025-11-08 15:29:26.000000260000 1 1 1 1 0
+2025-11-08 15:29:26.000000270000 1 1 1 1 1
+2025-11-08 15:29:26.000000280000 1 1 1 1 1
+2025-11-08 15:29:26.000000290000 1 1 1 1 0
+2025-11-08 15:29:26.000000300000 1 1 1 1 0
+2025-11-08 15:29:26.000000310000 1 1 1 1 1
+2025-11-08 15:29:26.000000320000 1 1 1 1 1
+2025-11-08 15:29:26.000000330000 1 1 1 1 0
+2025-11-08 15:29:26.000000340000 1 1 1 1 0
+2025-11-08 15:29:26.000000350000 1 1 1 1 1
+2025-11-08 15:29:26.000000360000 1 1 1 1 1
+2025-11-08 15:29:26.000000370000 1 1 1 1 0
+2025-11-08 15:29:26.000000380000 1 1 1 1 0
+2025-11-08 15:29:26.000000390000 1 1 0 1 1
+2025-11-08 15:29:26.000000400000 1 1 0 1 1
+```
+
 ## TODO
 
 - Add some notes on installing tinygo. This should have been easy, but
   it took some extra packages, and you have to use the version that
   supports the pico2-ice board.
 
-- Add some notes on compiling, simulating verilog and generating
-  bitfiles for the FPGA.
-
-- Implement some verilog for using the FPGA's SPI pins so after
-  cramming the FPGA code, we can use the same pins to communicate with
-  the configured FPGA logic.
+- Implement some verilog for using the FPGA's CRAM SPI pins. Then,
+  after cramming the FPGA code, we can use the same pins to
+  communicate with the configured FPGA logic. This will externalize
+  (and fix/validate) the use of the `fpga.go:spiWR()` code.
 
 ## Support
 
