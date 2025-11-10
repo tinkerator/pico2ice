@@ -8,11 +8,24 @@ microcontroller and a
 [iCE40UP5K](https://www.latticesemi.com/en/Products/FPGAandCPLD/iCE40UltraPlus)
 FPGA. This package provides some APIs for setting up these devices.
 
-## Example programs
+## Example program
 
-Light up the pico2-ice onboard LEDs using the `hello.bin` FPGA
-bitstream data:
+Light up the pico2-ice onboard LEDs including the use of the
+`hello.bin` FPGA bitstream logic.
 
+- **IMPORTANT** the pico2-ice board ships with a default boot image
+    that is not Tinygo compatible. The default image boots straight to
+    MicroPython and skips the steps needed by Tinygo to intercept the
+    boot. So, as you connect the USB cable from your computer to the
+    board, you need to already have pressed and be holding down the
+    `SW1` button (on the pico2 board, this button is labeled
+    `BOOTSEL`). This is a little awkward to do in practice, but it
+    should only be needed the first time. The bootloader re-program
+    ready state is a single LED show "white" and once you see that,
+    you can let go of the `SW1` button. The board is now patiently
+    waiting for the `tinygo flash` command below.
+
+Perform the following:
 ```
 $ git clone https://github.com/tinkerator/pico2ice.git
 $ cd pico2ice/examples
@@ -25,21 +38,22 @@ Blinking the RP Tricolor LEDs randomly
 
 Once flashed, the RP2350B starts running and briefly flashes the Red
 RP LED while the cram-load of the `hello.bin` FPGA bitstream is
-injected into the FPGA. It then lets the FPGA run causing it to flash
-its Blue LED. After this, the cram.go code randomly flashes one color
-at a time of the RP2350B connected Tricolor LED.
+injected into the FPGA. When this is successful, a Green LED
+illuminates to indicate that the FPGA is programmed. The `cram.go`
+program then lets the FPGA logic run causing it to flash its Blue
+LED. After this, and indefinitely, the cram.go code randomly flashes
+one color at a time of the RP2350B connected Tricolor LED.
 
 ## The pio.go file
 
 Part of the `pico2ice` package is generated code. The input for this
-generation is the collection of `.pio` files in the [pio/](pio)
-directory:
+generation is the collection of `.pio` files in the `pio/` directory:
 
 - [`pio/clock.pio`](pio/clock.pio) a 6-cycle clock output (pico2: 25 MHz)
 - [`pio/spi.pio`](pio/spi.pio) a simple SPI read and write transfer loop (pico2 6.25 MHz)
 
 To rebuild the `pio.go` file (assuming that you are in the
-pico2ice/examples directory):
+pico2ice/examples directory), do the following:
 
 ```
 $ cd ../../
@@ -57,11 +71,17 @@ $ cd ../pico2ice
 $ ~/go/bin/piocli --src=pio/spi.pio,pio/clock.pio --name pico2ice --tinygo > pio.go
 ```
 
+This shouldn't cause the file to change, but you can review if it has with:
+
+```
+$ git diff pio.go
+```
+
 ## The hello.bin file
 
 The `examples/hello.bin` file is an FPGA bitfile for the ice40 chip on
 the pico2-ice board. It is built from some verilog file present in the
-[v/](v) directory.
+`v/` directory.
 
 ### Generating the hello.bin file
 
@@ -82,13 +102,14 @@ $ nextpnr-ice40 --up5k  --package sg48 --json hello.json --pcf hello.pcf --asc h
 $ icepack hello.asc hello.bin
 ```
 
-- Note: the `hello.pcf` file is a script to map only the pins the
-  `cram.go` example uses. The full FPGA pinout file is referenced in a
-  comment in the `hello.pcf` file, but conveniently [here
+- Note: the `hello.pcf` file is a script to map only the pins this
+  `cram.go` + `hello.v` example uses. The full FPGA pinout file is
+  referenced in a comment in that `hello.pcf` file, but conveniently
+  [here
   too](https://github.com/tinyvision-ai-inc/pico-ice-sdk/blob/main/rtl/pico2_ice.pcf).
 
-If you want to replace the default build of this file with a custom
-one, you can do this:
+If you want to replace the default build of this file with the one
+made above, you can do this:
 
 ```
 $ cp hello.bin ../examples
@@ -97,11 +118,11 @@ $ cp hello.bin ../examples
 ### Simulating the hello.v logic
 
 Typically, to simulate logic, you have some test wrapper for that
-logic. In our case we have the `hello_test.v` file. To perform that
+logic.  In our case we have the `hello_test.v` file. To perform that
 test, we use the [Icarus
 Verilog](https://steveicarus.github.io/iverilog/) suite. Most
-specifically, the `iverilog` and `vvp` tools. We also use GTKWave (the
-`gtkwave` tool).
+specifically, the `iverilog` and `vvp` tools. We can also use GTKWave
+(the `gtkwave` tool).
 
 **NOTE** on Fedora and Debian, these tools are to be found in the
   `iverilog` and `gtkwave` packages.
@@ -172,6 +193,9 @@ $ ~/go/bin/twave --file dump.vcd --syms hello_test.top.clk,hello_test.reset,hell
 2025-11-08 15:29:26.000000390000 1 1 0 1 1
 2025-11-08 15:29:26.000000400000 1 1 0 1 1
 ```
+
+This list of bit values over time tracks the clock starting up, the
+logic reset and eventually the Blue LED starting to toggle on and off.
 
 ## TODO
 
