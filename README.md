@@ -21,7 +21,7 @@ Light up the pico2-ice onboard LEDs including the use of the
     `SW1` button (on the pico2 board, this button is labeled
     `BOOTSEL`). This is a little awkward to do in practice, but it
     should only be needed the first time. The bootloader re-program
-    ready state is a single LED show "white" and once you see that,
+    ready state is a single LED shows "white" and once you see that,
     you can let go of the `SW1` button. The board is now patiently
     waiting for the `tinygo flash` command below.
 
@@ -197,11 +197,56 @@ $ ~/go/bin/twave --file dump.vcd --syms hello_test.top.clk,hello_test.reset,hell
 This list of bit values over time tracks the clock starting up, the
 logic reset and eventually the Blue LED starting to toggle on and off.
 
-## TODO
+## Installing the developer version of tinygo
 
-- Add some notes on installing tinygo. This should have been easy, but
-  it took some extra packages, and you have to use the version that
-  supports the pico2-ice board.
+The default `tinygo` package might be very old, and not include
+support for the pico2-ice board. To remedy this, you can install a
+fresh compile of the `tinygo` `dev` branch.
+
+On Fedora install some packages (the first expands to most of the
+needed dependencies):
+
+```
+$ sudo dnf install tinygo clang-devel
+```
+
+On Debian, any go version older than 1.22 will not build. In truth,
+I've not yet been able to build tinygo on a Debian system (have only
+tried Bookworm 12). My best guess is. Install a better [go
+revision](https://go.dev/doc/install). Also, install these
+dependencies:
+
+```
+$ sudo apt install llvm-dev libclang-dev
+```
+
+Then:
+
+```
+$ git clone https://github.com/tinygo-org/tinygo.git
+$ cd tinygo/
+$ git checkout dev
+$ git submodule update --init --recursive
+$ make llvm-source
+$ make gen-device
+```
+
+The final step depends on which Linux distribution version you have:
+
+| Linux distribution | command |
+|-----------|--------|
+| Fedora 41 | `$ go install --tags llvm19` |
+| Fedora 42 | `$ go install --tags llvm20` |
+| Fedora 43 | `$ go get tinygo.org/x/go-llvm && go install --tags llvm21` |
+| Debian 12 (bookworm) | ? `$ go install --tags llvm20` |
+
+Then, to verify that the program installed correctly:
+
+```
+$ ~/go/bin/tinygo
+```
+
+## TODO
 
 - Implement some verilog for using the FPGA's CRAM SPI pins. Then,
   after cramming the FPGA code, we can use the same pins to
