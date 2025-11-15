@@ -1,5 +1,5 @@
 // Package pico2ice supports programming the pico2-ice FPGA using the
-// CRAM mechanism and also driving the FPGA clock pin at 25 MHz.
+// CRAM mechanism and also driving the FPGA clock pin at 75 MHz.
 package pico2ice
 
 import (
