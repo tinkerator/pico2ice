@@ -48,8 +48,8 @@ func Assign(block *pio.PIO) (*Engine, error) {
 		0x5a01,
 		0x0082,
 		0x8a42,
-		0x9242,
-		0x8242,
+		0x9042,
+		0x8042,
 	}, -1)
 	if err != nil {
 		return nil, err

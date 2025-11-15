@@ -8,3 +8,8 @@ set_io -nowarn reset  11 # active-low
 set_io -nowarn led_r  41 # active-low
 set_io -nowarn led_g  39 # active-low
 set_io -nowarn led_b  40 # active-low
+
+set_io -nowarn ice_so           14
+set_io -nowarn ice_sck          15
+set_io -nowarn ice_ssn          16 # active-low
+set_io -nowarn ice_si           17

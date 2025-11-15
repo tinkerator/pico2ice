@@ -74,9 +74,6 @@ func spiWR(send, recv []byte) {
 		if !ice.SM.IsRxFIFOEmpty() {
 			b := ice.SM.RxGet()
 			if keep {
-				// TODO have not validated this works
-				// so the code is not exported as a
-				// function, yet.
 				recv[i] = byte(b)
 			}
 			i++
@@ -84,6 +81,16 @@ func spiWR(send, recv []byte) {
 		}
 		runtime.Gosched()
 	}
+}
+
+// SPIxF activates the SPI interface to the FPGA by lowering
+// chip-select and performs an SPI transfer with the FPGA.
+func SPIxF(send, recv []byte) {
+	fpgaCS := machine.ICE_SSN
+	fpgaCS.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	fpgaCS.Low()
+	spiWR(send, recv)
+	fpgaCS.High()
 }
 
 // CramFPGA resets the FPGA and uploads the data bit file.

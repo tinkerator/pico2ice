@@ -6,7 +6,8 @@ The [pico2-ice](https://pico2-ice.tinyvision.ai/) board features a
 [RP2350B](https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf)
 microcontroller and a
 [iCE40UP5K](https://www.latticesemi.com/en/Products/FPGAandCPLD/iCE40UltraPlus)
-FPGA. This package provides some APIs for setting up these devices.
+FPGA. This [package](https://zappem.net/pub/io/pico2ice/) provides
+some APIs for setting up these devices.
 
 ## Example program
 
@@ -21,15 +22,16 @@ Light up the pico2-ice onboard LEDs including the use of the
     `SW1` button (on the pico2 board, this button is labeled
     `BOOTSEL`). This is a little awkward to do in practice, but it
     should only be needed the first time. The bootloader re-program
-    ready state is a single LED shows "white" and once you see that,
-    you can let go of the `SW1` button. The board is now patiently
-    waiting for the `tinygo flash` command below.
+    ready state is a single LED shows "white" (all three RGB LEDs lit)
+    and once you see that, you can let go of the `SW1` button. The
+    board is now patiently waiting for the `tinygo flash` command
+    below.
 
 Perform the following:
 ```
 $ git clone https://github.com/tinkerator/pico2ice.git
 $ cd pico2ice/examples
-$ ~/go/bin/tinygo flash -target=pico2-ice cram.go && ~/go/bin/tinygo monitor
+$ ~/go/bin/tinygo flash -target=pico2-ice -scheduler tasks cram.go && ~/go/bin/tinygo monitor
 Connected to /dev/ttyACM0. Press Ctrl-C to exit.
 Hello, World!
 FPGA program running (flashing FPGA Blue LED)
@@ -40,20 +42,20 @@ Once flashed, the RP2350B starts running and briefly flashes the Red
 RP LED while the cram-load of the `hello.bin` FPGA bitstream is
 injected into the FPGA. When this is successful, a Green LED
 illuminates to indicate that the FPGA is programmed. The `cram.go`
-program then lets the FPGA logic run causing it to flash its Blue
-LED. After this, and indefinitely, the cram.go code randomly flashes
-one color at a time of the RP2350B connected Tricolor LED.
+program then lets the FPGA logic run causing it to rapidly flash its
+Blue LED. After this, and indefinitely, the cram.go code randomly
+flashes one color at a time of the RP2350B connected Tricolor LED.
 
 ## The pio.go file
 
 Part of the `pico2ice` package is generated code. The input for this
 generation is the collection of `.pio` files in the `pio/` directory:
 
-- [`pio/clock.pio`](pio/clock.pio) a 6-cycle clock output (pico2: 25 MHz)
+- [`pio/clock.pio`](pio/clock.pio) a 2-cycle clock output (pico2: 75 MHz)
 - [`pio/spi.pio`](pio/spi.pio) a simple SPI read and write transfer loop (pico2 6.25 MHz)
 
 To rebuild the `pio.go` file (assuming that you are in the
-pico2ice/examples directory), do the following:
+`pico2ice/examples` directory), do the following:
 
 ```
 $ cd ../../
@@ -80,12 +82,12 @@ $ git diff pio.go
 ## The hello.bin file
 
 The `examples/hello.bin` file is an FPGA bitfile for the ice40 chip on
-the pico2-ice board. It is built from some verilog file present in the
+the pico2-ice board. It is built from a verilog file present in the
 `v/` directory.
 
 ### Generating the hello.bin file
 
-To convert `v/hello.v` into a `hello.bin` file we use the yosys
+To convert `v/hello.v` into a `hello.bin` file we use the `yosys`
 toolchain. Specifically the tools `yosys`, `nextpnr-ice40` and
 `icepack`.
 
@@ -102,10 +104,10 @@ $ nextpnr-ice40 --up5k  --package sg48 --json hello.json --pcf hello.pcf --asc h
 $ icepack hello.asc hello.bin
 ```
 
-- Note: the `hello.pcf` file is a script to map only the pins this
-  `cram.go` + `hello.v` example uses. The full FPGA pinout file is
-  referenced in a comment in that `hello.pcf` file, but conveniently
-  [here
+- Note: the `hello.pcf` file is a script to map the pins these
+  `cram.go` + `hello.v` (and `comm.v`) examples use. The full FPGA
+  pinout file is referenced in a comment in that `hello.pcf` file, and
+  conveniently [here
   too](https://github.com/tinyvision-ai-inc/pico-ice-sdk/blob/main/rtl/pico2_ice.pcf).
 
 If you want to replace the default build of this file with the one
@@ -115,11 +117,57 @@ made above, you can do this:
 $ cp hello.bin ../examples
 ```
 
-### Simulating the hello.v logic
+### comm.v
+
+A more ambitious verilog file is `v/comm.v`. This pays attention to
+runtime attempts by the `cram.go` code to control the FPGA LED from
+the RP2350B microcontroller program. Namely, its attempts to set the
+FPGA LED with an SPI command from the microcontroller code. To build
+and install this FPGA bitfile, `cd v/` and run the following
+commands:
+
+```
+$ yosys -p "synth_ice40 -top top -json hello.json" comm.v
+$ nextpnr-ice40 --up5k  --package sg48 --json hello.json --pcf hello.pcf --asc hello.asc
+$ icepack hello.asc hello.bin
+$ cp hello.bin ../examples
+```
+
+Then, from the `../examples` directory, this command will generate
+some output like this (9 wrote + read values will be displayed):
+
+```
+$ ~/go/bin/tinygo flash -target=pico2-ice -scheduler tasks cram.go && ~/go/bin/tinygo monitor
+Connected to /dev/ttyACM0. Press Ctrl-C to exit.
+Hello, World!
+FPGA program running (flashing FPGA Blue LED)
+Blinking the RP Tricolor LEDs randomly
+wrote: 2  read: 0
+wrote: 4  read: 2
+wrote: 1  read: 4
+wrote: 2  read: 1
+wrote: 4  read: 2
+wrote: 1  read: 4
+wrote: 2  read: 1
+wrote: 4  read: 2
+wrote: 1  read: 4
+```
+
+and will cause the FPGA to mirror the last set microcontroller LED
+color. The 9 read values here should match the prior line's write
+value. The 0 initially read value is just reflecting the fact that the
+reset value is 0 for the 3 bit FPGA LED setting.
+
+- **NOTE**: this example requires the FPGA logic is running 8x or
+    better the speed of the SPI clock. Any slower and the SPI returned
+    result will be late by 1-bit - returning results that are 2x
+    smaller than expected.
+
+### Simulating the `hello.v` logic
 
 Typically, to simulate logic, you have some test wrapper for that
-logic.  In our case we have the `hello_test.v` file. To perform that
-test, we use the [Icarus
+logic.  In the `hello.v` case we have included the `hello_test.v`
+file. To perform that test, we use the [Icarus
 Verilog](https://steveicarus.github.io/iverilog/) suite. Most
 specifically, the `iverilog` and `vvp` tools. We can also use GTKWave
 (the `gtkwave` tool).
@@ -140,7 +188,8 @@ end of test
 You can view this `dump.vcd` file with
 [GTKWave](https://steveicarus.github.io/iverilog/usage/gtkwave.html),
 and also with the [`twave`](https://zappem.net/pub/project/twave/)
-tool. To only look at the top level signals we do the following:
+tool. To only look at the top level signals with that text based tool
+we can do the following:
 
 ```
 $ ~/go/bin/twave --file dump.vcd --syms hello_test.top.clk,hello_test.reset,hello_test.red,hello_test.green,hello_test.blue
@@ -248,10 +297,13 @@ $ ~/go/bin/tinygo
 
 ## TODO
 
-- Implement some verilog for using the FPGA's CRAM SPI pins. Then,
-  after cramming the FPGA code, we can use the same pins to
-  communicate with the configured FPGA logic. This will externalize
-  (and fix/validate) the use of the `fpga.go:spiWR()` code.
+Nothing planned. Currently, the tinygo code cannot take advantage of
+the dual core nature of the RP2350B chip because of [tinygo bug
+4974](https://github.com/tinygo-org/tinygo/issues/4974) there is also
+[some issue with
+llvm21](https://github.com/tinygo-org/tinygo/issues/5086). At some
+point those problems will be fixed and these instructions will drop
+the use of the `-scheduler tasks` compilation flags.
 
 ## Support
 
