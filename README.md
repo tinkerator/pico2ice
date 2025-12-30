@@ -34,8 +34,8 @@ $ cd pico2ice/examples
 $ ~/go/bin/tinygo flash -target=pico2-ice -scheduler tasks cram.go && ~/go/bin/tinygo monitor
 Connected to /dev/ttyACM0. Press Ctrl-C to exit.
 Hello, World!
-FPGA program running (flashing FPGA Blue LED)
 Blinking the RP Tricolor LEDs randomly
+FPGA program running (flashing FPGA Blue LED)
 ```
 
 Once flashed, the RP2350B starts running and briefly flashes the Red
@@ -140,8 +140,8 @@ some output like this (9 wrote + read values will be displayed):
 $ ~/go/bin/tinygo flash -target=pico2-ice -scheduler tasks cram.go && ~/go/bin/tinygo monitor
 Connected to /dev/ttyACM0. Press Ctrl-C to exit.
 Hello, World!
-FPGA program running (flashing FPGA Blue LED)
 Blinking the RP Tricolor LEDs randomly
+FPGA program mirrors RP LEDs
 wrote: 2  read: 0
 wrote: 4  read: 2
 wrote: 1  read: 4
@@ -248,25 +248,19 @@ logic reset and eventually the Blue LED starting to toggle on and off.
 
 ## Installing the developer version of tinygo
 
-The default `tinygo` package might be very old, and not include
-support for the pico2-ice board. To remedy this, you can install a
-fresh compile of the `tinygo` `dev` branch.
+The default `tinygo` package might be very old (pico2-ice support
+debuted in release v0.40.0), and not include support for the pico2-ice
+board. To remedy this, you can install a fresh compile of the `tinygo`
+source tree and build it yourself (see below).
 
-On Fedora install some packages (the first expands to most of the
+On Debian, and Mac, the `tinygo` releases have some prebuilt packages
+that you can install: https://github.com/tinygo-org/tinygo/releases
+
+On Fedora, install some packages (the first expands to most of the
 needed dependencies):
 
 ```
 $ sudo dnf install tinygo clang-devel
-```
-
-On Debian, any go version older than 1.22 will not build. In truth,
-I've not yet been able to build tinygo on a Debian system (have only
-tried Bookworm 12). My best guess is. Install a better [go
-revision](https://go.dev/doc/install). Also, install these
-dependencies:
-
-```
-$ sudo apt install llvm-dev libclang-dev
 ```
 
 Then:
@@ -274,11 +268,13 @@ Then:
 ```
 $ git clone https://github.com/tinygo-org/tinygo.git
 $ cd tinygo/
-$ git checkout dev
 $ git submodule update --init --recursive
 $ make llvm-source
 $ make gen-device
 ```
+
+Note, if you want even more recent code support, you can try
+performing the last 3 lines above after `git checkout dev`.
 
 The final step depends on which Linux distribution version you have:
 
@@ -286,8 +282,7 @@ The final step depends on which Linux distribution version you have:
 |-----------|--------|
 | Fedora 41 | `$ go install --tags llvm19` |
 | Fedora 42 | `$ go install --tags llvm20` |
-| Fedora 43 | `$ go get tinygo.org/x/go-llvm && go install --tags llvm21` |
-| Debian 12 (bookworm) | ? `$ go install --tags llvm20` |
+| Fedora 43 | `$ go install --tags llvm21` |
 
 Then, to verify that the program installed correctly:
 

@@ -71,9 +71,7 @@ func main() {
 	machine.LED_RED.Low()
 
 	if err := pico2ice.CramFPGA(ctx, fpgaBitstream); err != nil {
-		println("CramFPGA returned: ", err)
-	} else {
-		println("FPGA program running (flashing FPGA Blue LED)")
+		println("CramFPGA failed with error: ", err)
 	}
 
 	// Enable the logic
@@ -85,6 +83,7 @@ func main() {
 	// Blink the different LEDs.
 	println("Blinking the RP Tricolor LEDs randomly")
 	data := make([]byte, 2)
+	once := false
 	for i := 0; ; i++ {
 		// A new random order for leds.
 		for led := range leds {
@@ -93,6 +92,15 @@ func main() {
 
 			// ignored if using the hello.v logic.
 			pico2ice.SPIxF(data, data)
+
+			if !once {
+				if data[1] == 0xff {
+					println("FPGA program running (flashing FPGA Blue LED)")
+				} else {
+					println("FPGA program mirrors RP LEDs")
+				}
+				once = true
+			}
 			if i < 3 && data[1] != 0xff {
 				// The FPGA logic responded with
 				// something other than 0xff.
