@@ -254,7 +254,10 @@ board. To remedy this, you can install a fresh compile of the `tinygo`
 source tree and build it yourself (see below).
 
 On Debian, and Mac, the `tinygo` releases have some prebuilt packages
-that you can install: https://github.com/tinygo-org/tinygo/releases
+that you can install:
+https://github.com/tinygo-org/tinygo/releases. For Debian, to install
+the `.deb` package for your architecture, use `sudo dpkg -i
+tinygo_*.deb`.
 
 On Fedora, install some packages (the first expands to most of the
 needed dependencies):
@@ -287,15 +290,15 @@ The final step depends on which Linux distribution version you have:
 Then, to verify that the program installed correctly:
 
 ```
-$ ~/go/bin/tinygo
+$ ~/go/bin/tinygo version
 ```
 
 ## TODO
 
 Nothing planned. Currently, the tinygo code cannot take advantage of
 the dual core nature of the RP2350B chip because of [tinygo bug
-4974](https://github.com/tinygo-org/tinygo/issues/4974) there is also
-[some issue with
+4974](https://github.com/tinygo-org/tinygo/issues/4974) there has also
+[been some issue with
 llvm21](https://github.com/tinygo-org/tinygo/issues/5086). At some
 point those problems will be fixed and these instructions will drop
 the use of the `-scheduler tasks` compilation flags.
