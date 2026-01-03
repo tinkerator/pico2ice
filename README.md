@@ -27,11 +27,16 @@ Light up the pico2-ice onboard LEDs including the use of the
     board is now patiently waiting for the `tinygo flash` command
     below.
 
+- **NOTE** this README assumes that `~/go/bin` is in your `$PATH`
+    variable. Built tools like `piocli` and `twave` will be installed
+    there. Also, in the case of Fedora, where we build `tinygo` from
+    source, we will install that tool there too.
+
 Perform the following:
 ```
 $ git clone https://github.com/tinkerator/pico2ice.git
 $ cd pico2ice/examples
-$ ~/go/bin/tinygo flash -target=pico2-ice -scheduler tasks cram.go && ~/go/bin/tinygo monitor
+$ tinygo flash -target=pico2-ice -scheduler tasks cram.go && tinygo monitor
 Connected to /dev/ttyACM0. Press Ctrl-C to exit.
 Hello, World!
 Blinking the RP Tricolor LEDs randomly
@@ -70,7 +75,7 @@ the `pico2ice` sources and run this tool:
 
 ```
 $ cd ../pico2ice
-$ ~/go/bin/piocli --src=pio/spi.pio,pio/clock.pio --name pico2ice --tinygo > pio.go
+$ piocli --src=pio/spi.pio,pio/clock.pio --name pico2ice --tinygo > pio.go
 ```
 
 This shouldn't cause the file to change, but you can review if it has with:
@@ -137,7 +142,7 @@ Then, from the `../examples` directory, this command will generate
 some output like this (9 wrote + read values will be displayed):
 
 ```
-$ ~/go/bin/tinygo flash -target=pico2-ice -scheduler tasks cram.go && ~/go/bin/tinygo monitor
+$ tinygo flash -target=pico2-ice -scheduler tasks cram.go && tinygo monitor
 Connected to /dev/ttyACM0. Press Ctrl-C to exit.
 Hello, World!
 Blinking the RP Tricolor LEDs randomly
@@ -192,7 +197,7 @@ tool. To only look at the top level signals with that text based tool
 we can do the following:
 
 ```
-$ ~/go/bin/twave --file dump.vcd --syms hello_test.top.clk,hello_test.reset,hello_test.red,hello_test.green,hello_test.blue
+$ twave --file dump.vcd --syms hello_test.top.clk,hello_test.reset,hello_test.red,hello_test.green,hello_test.blue
 [] : [$version Icarus Verilog $end]
                 hello_test.green-+
                   hello_test.red-|-+
@@ -290,7 +295,7 @@ The final step depends on which Linux distribution version you have:
 Then, to verify that the program installed correctly:
 
 ```
-$ ~/go/bin/tinygo version
+$ tinygo version
 ```
 
 ## TODO
