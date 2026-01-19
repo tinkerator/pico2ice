@@ -300,13 +300,17 @@ $ tinygo version
 
 ## TODO
 
-Nothing planned. Currently, the tinygo code cannot take advantage of
-the dual core nature of the RP2350B chip because of [tinygo bug
-4974](https://github.com/tinygo-org/tinygo/issues/4974) there has also
-[been some issue with
-llvm21](https://github.com/tinygo-org/tinygo/issues/5086). At some
-point those problems will be fixed and these instructions will drop
-the use of the `-scheduler tasks` compilation flags.
+- Currently, the tscan sub-package uses bit banging. Might investigate
+  using PIO for this sort of transfer, to support faster transfer
+  speeds.
+
+- Currently, the tinygo code cannot take advantage of the dual core
+  nature of the RP2350B chip because of [tinygo bug
+  4974](https://github.com/tinygo-org/tinygo/issues/4974) there has
+  also [been some issue with
+  llvm21](https://github.com/tinygo-org/tinygo/issues/5086). At some
+  point those problems will be fixed and these instructions will drop
+  the use of the `-scheduler tasks` compilation flags.
 
 ## Support
 
