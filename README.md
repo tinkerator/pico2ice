@@ -287,7 +287,7 @@ performing the last 3 lines above after `git checkout dev`.
 The final step depends on which Linux distribution version you have:
 
 | Linux distribution | command |
-|-----------|--------|
+|--------------------|---------|
 | Fedora 41 | `$ go install --tags llvm19` |
 | Fedora 42 | `$ go install --tags llvm20` |
 | Fedora 43 | `$ go install --tags llvm21` |
@@ -302,7 +302,9 @@ $ tinygo version
 
 - Currently, the tscan sub-package uses bit banging. Might investigate
   using PIO for this sort of transfer, to support faster transfer
-  speeds.
+  speeds. Complexity is when we are using a pure read and want to
+  reinsert the unchanged values back into the logic, we should be able
+  to do it without latency.
 
 - Currently, the tinygo code cannot take advantage of the dual core
   nature of the RP2350B chip because of [tinygo bug

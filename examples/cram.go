@@ -19,8 +19,8 @@
 // device. This is what the SPI write of the color value causes. With
 // the hello.v logic, this write is ignored by the FPGA, but it
 // becomes active if comm.v is the source for the FPGA logic. The
-// logic returns the prior value of the FPGA LEDs over SPI, but the
-// cram.go code does not currently pay attention to that.
+// comm.v logic returns the prior value of the FPGA LEDs over SPI, and
+// the cram.go code recognizes and displays 9 pairs of these values.
 package main
 
 import (
