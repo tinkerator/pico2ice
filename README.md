@@ -32,6 +32,13 @@ Light up the pico2-ice onboard LEDs including the use of the
     there. Also, in the case of Fedora, where we build `tinygo` from
     source, we will install that tool there too.
 
+- **NOTE** the following `tinygo flash ...` command may fail with a
+    permission issue accessing `/dev/ttyACM0`. This may be because
+    your username isn't in the `dialout` group. You can correct this
+    with the one-time action `sudo usermod -aG dialout $(whoami)`.
+    You will need to log out and log back in again (or just reboot)
+    for this change to take effect.
+
 Perform the following:
 ```
 $ git clone https://github.com/tinkerator/pico2ice.git
