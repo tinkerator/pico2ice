@@ -297,7 +297,7 @@ The final step depends on which Linux distribution version you have:
 |--------------------|---------|
 | Fedora 41 | `$ go install --tags llvm19` |
 | Fedora 42 | `$ go install --tags llvm20` |
-| Fedora 43 | `$ go install --tags llvm21` |
+| Fedora 43 | Doesn't just work... See [this bug update for a recipe](https://github.com/tinygo-org/tinygo/issues/5086#issuecomment-3919095141). |
 
 Then, to verify that the program installed correctly:
 
