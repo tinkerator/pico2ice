@@ -55,7 +55,7 @@ RP LED while the cram-load of the `hello.bin` FPGA bitstream is
 injected into the FPGA. When this is successful, a Green LED
 illuminates to indicate that the FPGA is programmed. The `cram.go`
 program then lets the FPGA logic run causing it to rapidly flash its
-Blue LED. After this, and indefinitely, the cram.go code randomly
+Blue LED. After this, and indefinitely, the `cram.go` code randomly
 flashes one color at a time of the RP2350B connected Tricolor LED.
 
 ## The pio.go file
